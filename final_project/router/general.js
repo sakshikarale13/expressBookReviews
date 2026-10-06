@@ -39,15 +39,17 @@ public_users.post("/register", (req, res) => {
 });
 
 
-// Internal data endpoint used by Axios
-// This is not one of the graded public endpoints.
-public_users.get('/books-data', function (req, res) {
+// Internal endpoint used as the Axios data source
+public_users.get("/books-data", (req, res) => {
+
   return res.status(200).json(books);
+
 });
 
 
-// Get all books using Axios + async/await
-public_users.get('/', async function (req, res) {
+// Task: Get all books
+// Uses Axios with async/await
+public_users.get("/", async (req, res) => {
 
   try {
 
@@ -66,28 +68,27 @@ public_users.get('/', async function (req, res) {
 });
 
 
-// Get book details based on ISBN using Axios + Promise
-public_users.get('/isbn/:isbn', function (req, res) {
+// Task: Get book by ISBN
+// Uses Axios Promise callback
+public_users.get("/isbn/:isbn", (req, res) => {
 
   const isbn = req.params.isbn;
 
   axios.get(`${BASE_URL}/books-data`)
-
-    .then(response => {
+    .then((response) => {
 
       const book = response.data[isbn];
 
-      if (book) {
-        return res.status(200).json(book);
+      if (!book) {
+        return res.status(404).json({
+          message: "Book not found"
+        });
       }
 
-      return res.status(404).json({
-        message: "Book not found"
-      });
+      return res.status(200).json(book);
 
     })
-
-    .catch(error => {
+    .catch((error) => {
 
       return res.status(500).json({
         message: "Error fetching book"
@@ -98,8 +99,9 @@ public_users.get('/isbn/:isbn', function (req, res) {
 });
 
 
-// Get book details based on author using Axios + async/await
-public_users.get('/author/:author', async function (req, res) {
+// Task: Get books by author
+// Uses Axios with async/await
+public_users.get("/author/:author", async (req, res) => {
 
   try {
 
@@ -107,17 +109,17 @@ public_users.get('/author/:author', async function (req, res) {
 
     const author = req.params.author.toLowerCase();
 
-    const result = Object.values(response.data).filter(book =>
-      book.author.toLowerCase() === author
+    const result = Object.values(response.data).filter(
+      book => book.author.toLowerCase() === author
     );
 
-    if (result.length > 0) {
-      return res.status(200).json(result);
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: "No books found for this author"
+      });
     }
 
-    return res.status(404).json({
-      message: "No books found for this author"
-    });
+    return res.status(200).json(result);
 
   } catch (error) {
 
@@ -130,8 +132,9 @@ public_users.get('/author/:author', async function (req, res) {
 });
 
 
-// Get all books based on title using Axios + async/await
-public_users.get('/title/:title', async function (req, res) {
+// Task: Get books by title
+// Uses Axios with async/await
+public_users.get("/title/:title", async (req, res) => {
 
   try {
 
@@ -139,17 +142,17 @@ public_users.get('/title/:title', async function (req, res) {
 
     const title = req.params.title.toLowerCase();
 
-    const result = Object.values(response.data).filter(book =>
-      book.title.toLowerCase() === title
+    const result = Object.values(response.data).filter(
+      book => book.title.toLowerCase() === title
     );
 
-    if (result.length > 0) {
-      return res.status(200).json(result);
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: "No books found for this title"
+      });
     }
 
-    return res.status(404).json({
-      message: "No books found for this title"
-    });
+    return res.status(200).json(result);
 
   } catch (error) {
 
@@ -162,22 +165,20 @@ public_users.get('/title/:title', async function (req, res) {
 });
 
 
-// Get book review
-public_users.get('/review/:isbn', function (req, res) {
+// Task: Get book review
+public_users.get("/review/:isbn", (req, res) => {
 
   const isbn = req.params.isbn;
 
-  if (books[isbn]) {
-
-    return res.status(200).json(
-      books[isbn].reviews
-    );
-
+  if (!books[isbn]) {
+    return res.status(404).json({
+      message: "Book not found"
+    });
   }
 
-  return res.status(404).json({
-    message: "Book not found"
-  });
+  return res.status(200).json(
+    books[isbn].reviews
+  );
 
 });
 
